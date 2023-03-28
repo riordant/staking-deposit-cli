@@ -13,6 +13,7 @@ from staking_deposit.utils.constants import (
 from staking_deposit.utils.crypto import (
     SHA256,
     PBKDF2,
+    _sha256
 )
 from staking_deposit.utils.file_handling import (
     resource_path,
@@ -142,8 +143,9 @@ def get_mnemonic(*, language: str, words_path: str, entropy: Optional[bytes]=Non
 
     Ref: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#generating-the-mnemonic
     """
-    if entropy is None:
-        entropy = randbits(256).to_bytes(32, 'big')
+    seed = bytes(str(os.environ.get('SEED')), 'utf-8')
+    hashed = _sha256.new(data=seed)
+    entropy = hashed.digest()
     entropy_length = len(entropy) * 8
     checksum_length = (entropy_length // 32)
     checksum = _get_checksum(entropy)
